@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"its-noun-day-of-week/utils"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -34,18 +31,6 @@ func main() {
 		return
 	}
 
-	buffer := aws.NewWriteAtBuffer([]byte{})
-	_, err = downloader.Download(buffer, &s3.GetObjectInput{
-		Bucket: aws.String(env.S3Bucket),
-		Key:    aws.String("THURSDAY.png"),
-	})
-	if err != nil {
-		fmt.Println("S3 download error", err)
-	}
-	file = &discordgo.File{Reader: bytes.NewReader(buffer.Bytes()), Name: "THURSDAY.png", ContentType: "image/png"}
-	messageData.Files = append(messageData.Files, file)
-	// TODO: Videos
-	// file = &discordgo.File{Reader: img, Name: "THURSDAY.mp4", ContentType: "video/mp4"}
 	switch dayString {
 	case "Sunday":
 		break
@@ -56,7 +41,11 @@ func main() {
 	case "Wednesday":
 		break
 	case "Thursday":
-		break
+		file, err = utils.DownloadAndParseFile(downloader, env, "THURSDAY.mp4", "video/mp4")
+		if err != nil {
+			return
+		}
+		messageData.Files = append(messageData.Files, file)
 	case "Friday":
 		break
 	case "Saturday":
