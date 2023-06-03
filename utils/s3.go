@@ -26,9 +26,9 @@ func CreateS3Client(env Env) (*s3.Client, error) {
 	return Client, nil
 }
 
-func (s S3DataSource) CreateS3Downloader() *manager.Downloader {
+func CreateS3Downloader(client *s3.Client) *manager.Downloader {
 	var partMiBs int64 = 10
-	downloader := manager.NewDownloader(s.Client, func(d *manager.Downloader) {
+	downloader := manager.NewDownloader(client, func(d *manager.Downloader) {
 		d.PartSize = partMiBs * 1024 * 1024
 	})
 	return downloader
@@ -48,4 +48,26 @@ func (s S3DataSource) DownloadAndParseFile(env Env, key string, mimetype string)
 	}
 	file = &discordgo.File{Reader: bytes.NewReader(buffer.Bytes()), Name: key, ContentType: mimetype}
 	return file, nil
+}
+
+func (s S3DataSource) ListAllFilesInFolder(env Env, dayOfWeek string) (*s3.ListObjectsV2Output, error) {
+	res, err := s.Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+		Bucket: aws.String(env.S3Bucket),
+		Prefix: aws.String(dayOfWeek),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s S3DataSource) GetObjectMetadata(env Env, key string) (string, error) {
+	res, err := s.Client.GetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(env.S3Bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return "", err
+	}
+	return *res.ContentType, nil
 }

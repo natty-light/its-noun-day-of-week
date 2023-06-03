@@ -24,26 +24,31 @@ func main() {
 
 	messageData := &discordgo.MessageSend{}
 	messageData.Files = make([]*discordgo.File, 0)
-	var file *discordgo.File
 
 	client, err := utils.CreateS3Client(env)
 	if err != nil {
 		fmt.Println("S3 Client config error", err)
 		return
 	}
-	d := utils.S3DataSource{Client: client}
-
-	downloader := d.CreateS3Downloader()
+	downloader := utils.CreateS3Downloader(client)
 	if err != nil {
 		return
 	}
-	d.Downloader = downloader
+	d := utils.S3DataSource{Client: client, Downloader: downloader}
 
-	file, err = d.DownloadAndParseFile(env, "THURSDAY.mp4", "video/mp4")
-	if err != nil {
-		return
+	x, _ := d.ListAllFilesInFolder(env, "thursday")
+	for _, item := range x.Contents[1:] {
+		key := *item.Key
+		mimetype, err := d.GetObjectMetadata(env, key)
+		if err != nil {
+			fmt.Println(err)
+		}
+		file, err := d.DownloadAndParseFile(env, *item.Key, mimetype)
+		if err != nil {
+			continue
+		}
+		messageData.Files = append(messageData.Files, file)
 	}
-	messageData.Files = append(messageData.Files, file)
 
 	switch dayString {
 	case "Sunday":
