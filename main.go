@@ -22,9 +22,6 @@ func main() {
 	today := time.Now().Weekday()
 	dayString := today.String()
 
-	messageData := &discordgo.MessageSend{}
-	messageData.Files = make([]*discordgo.File, 0)
-
 	client, err := utils.CreateS3Client(env)
 	if err != nil {
 		fmt.Println("S3 Client config error", err)
@@ -36,19 +33,7 @@ func main() {
 	}
 	d := utils.S3DataSource{Client: client, Downloader: downloader}
 
-	x, _ := d.ListAllFilesInFolder(env, "thursday")
-	for _, item := range x.Contents[1:] {
-		key := *item.Key
-		mimetype, err := d.GetObjectMetadata(env, key)
-		if err != nil {
-			fmt.Println(err)
-		}
-		file, err := d.DownloadAndParseFile(env, *item.Key, mimetype)
-		if err != nil {
-			continue
-		}
-		messageData.Files = append(messageData.Files, file)
-	}
+	messageData, _ := prepareDailyMessage(env, d, "thursday")
 
 	switch dayString {
 	case "Sunday":
@@ -79,4 +64,27 @@ func main() {
 	} else {
 		fmt.Println("Send successful", res)
 	}
+}
+
+func prepareDailyMessage(env utils.Env, d utils.S3DataSource, dayOfWeek string) (*discordgo.MessageSend, error) {
+	messageData := &discordgo.MessageSend{}
+	messageData.Files = make([]*discordgo.File, 0)
+	var err error
+
+	keys, _ := d.ListAllFilesInFolder(env, "thursday")
+	for _, item := range keys[1:] {
+		key := *item.Key
+		mimetype, err := d.GetObjectMetadata(env, key)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		file, err := d.DownloadAndParseFile(env, *item.Key, mimetype)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		messageData.Files = append(messageData.Files, file)
+	}
+	return messageData, err
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/bwmarrin/discordgo"
 )
@@ -50,7 +51,7 @@ func (s S3DataSource) DownloadAndParseFile(env Env, key string, mimetype string)
 	return file, nil
 }
 
-func (s S3DataSource) ListAllFilesInFolder(env Env, dayOfWeek string) (*s3.ListObjectsV2Output, error) {
+func (s S3DataSource) ListAllFilesInFolder(env Env, dayOfWeek string) ([]types.Object, error) {
 	res, err := s.Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(env.S3Bucket),
 		Prefix: aws.String(dayOfWeek),
@@ -58,7 +59,7 @@ func (s S3DataSource) ListAllFilesInFolder(env Env, dayOfWeek string) (*s3.ListO
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
+	return res.Contents, nil
 }
 
 func (s S3DataSource) GetObjectMetadata(env Env, key string) (string, error) {
