@@ -11,6 +11,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+type S3DataSource struct {
+	Downloader s3manager.Downloader
+}
+
 func CreateS3Downloader(env Env) (*s3manager.Downloader, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(env.AwsRegion),
@@ -28,10 +32,10 @@ func GenerateS3ObjectURL(bucket string, outputFileName string) string {
 	return fmt.Sprintf(`https://%s.s3.amazonaws.com/%s`, bucket, outputFileName)
 }
 
-func DownloadAndParseFile(downloader *s3manager.Downloader, env Env, name string, mimetype string) (*discordgo.File, error) {
+func (s S3DataSource) DownloadAndParseFile(env Env, name string, mimetype string) (*discordgo.File, error) {
 	var file *discordgo.File
 	buffer := aws.NewWriteAtBuffer([]byte{})
-	_, err := downloader.Download(buffer, &s3.GetObjectInput{
+	_, err := s.Downloader.Download(buffer, &s3.GetObjectInput{
 		Bucket: aws.String(env.S3Bucket),
 		Key:    aws.String(name),
 	})

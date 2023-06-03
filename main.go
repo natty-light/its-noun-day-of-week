@@ -31,6 +31,8 @@ func main() {
 		return
 	}
 
+	d := utils.S3DataSource{Downloader: *downloader}
+
 	switch dayString {
 	case "Sunday":
 		break
@@ -41,7 +43,7 @@ func main() {
 	case "Wednesday":
 		break
 	case "Thursday":
-		file, err = utils.DownloadAndParseFile(downloader, env, "THURSDAY.mp4", "video/mp4")
+		file, err = d.DownloadAndParseFile(env, "THURSDAY.mp4", "video/mp4")
 		if err != nil {
 			return
 		}
