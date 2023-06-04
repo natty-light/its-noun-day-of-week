@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"its-noun-day-of-week/utils"
-	"os"
 	"strings"
 	"time"
 
@@ -56,9 +55,9 @@ func main() {
 		fmt.Println("s.ChannelMessageSendComplex error", err)
 	} else {
 		fmt.Println("Send successful", res)
-		d.UploadTimeStamp(env, res.Timestamp.Format(time.UnixDate))
+		err = d.UploadTimeStamp(env, res.Timestamp.Format(time.UnixDate))
+		fmt.Println("Upload error: ", err)
 	}
-	os.Exit(0)
 }
 
 func prepareDailyMessage(env utils.Env, d utils.S3DataSource, dayOfWeek string) (*discordgo.MessageSend, error) {
