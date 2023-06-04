@@ -35,7 +35,7 @@ func CreateS3Downloader(client *s3.Client) *manager.Downloader {
 	return downloader
 }
 
-func (s S3DataSource) DownloadAndParseFileViaStream(env Env, key string, mimetype string) (*discordgo.File, error) {
+func (s S3DataSource) DownloadAndParseFileViaDownloader(env Env, key string, mimetype string) (*discordgo.File, error) {
 	buffer := manager.NewWriteAtBuffer([]byte{})
 
 	_, err := s.Downloader.Download(context.TODO(), buffer, &s3.GetObjectInput{
