@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"its-noun-day-of-week/utils"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -20,8 +21,9 @@ func main() {
 	}
 
 	today := time.Now().Weekday()
-	dayString := today.String()
+	dayString := strings.ToLower(today.String())
 
+	fmt.Println(dayString)
 	client, err := utils.CreateS3Client(env)
 	if err != nil {
 		fmt.Println("S3 Client config error", err)
@@ -34,24 +36,7 @@ func main() {
 	d := utils.S3DataSource{Client: client, Downloader: downloader}
 
 	messageData, _ := prepareDailyMessage(env, d, "thursday")
-
-	switch dayString {
-	case "Sunday":
-		break
-	case "Monday":
-		break
-	case "Tuesday":
-		break
-	case "Wednesday":
-		break
-	case "Thursday":
-
-	case "Friday":
-		break
-	case "Saturday":
-		break
-	}
-
+	// messageData, err := prepareDailyMessage(env, d, dayString)
 	err = s.Open()
 	if err != nil {
 		fmt.Println("s.Open error", err)
