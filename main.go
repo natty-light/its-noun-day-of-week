@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"its-noun-day-of-week/utils"
+	"os"
 	"strings"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 func main() {
 
 	env := utils.GetEnv()
-
 	s, err := discordgo.New("Bot " + env.DiscordToken)
 	if err != nil {
 		fmt.Println(err)
@@ -20,8 +20,8 @@ func main() {
 	}
 
 	dayString := strings.ToLower(time.Now().Weekday().String())
+	fmt.Printf("Running for %s \n", dayString)
 
-	fmt.Println(dayString)
 	client, err := utils.CreateS3Client(env)
 	if err != nil {
 		fmt.Println("S3 Client config error", err)
@@ -33,9 +33,7 @@ func main() {
 		return
 	}
 	d := utils.S3DataSource{Client: client, Downloader: downloader}
-
-	messageData, err := prepareDailyMessage(env, d, "thursday")
-	// messageData, err := prepareDailyMessage(env, d, dayString)
+	messageData, err := prepareDailyMessage(env, d, dayString)
 	if err != nil {
 		fmt.Println("Prepare message error", err)
 		return
@@ -53,12 +51,17 @@ func main() {
 	} else {
 		fmt.Println("Send successful", res)
 	}
+	os.Exit(0)
 }
 
 func prepareDailyMessage(env utils.Env, d utils.S3DataSource, dayOfWeek string) (*discordgo.MessageSend, error) {
 	messageData := &discordgo.MessageSend{}
 	messageData.Files = make([]*discordgo.File, 0)
-	keys, _ := d.ListAllFilesInFolder(env, dayOfWeek)
+	keys, err := d.ListAllFilesInFolder(env, dayOfWeek)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(keys)
 	if len(keys) == 0 {
 		return nil, fmt.Errorf("no images for %s", dayOfWeek)
 	}

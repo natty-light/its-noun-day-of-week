@@ -20,6 +20,7 @@ type S3DataSource struct {
 
 func CreateS3Client(env Env) (*s3.Client, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
+	cfg.Region = env.AwsRegion
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +42,7 @@ func (s S3DataSource) ListAllFilesInFolder(env Env, dayOfWeek string) ([]types.O
 		Prefix: aws.String(dayOfWeek),
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error listing objects: %s", err.Error())
 	}
 	return res.Contents, nil
 }
@@ -52,7 +53,7 @@ func (s S3DataSource) DownloadAndParseFile(env Env, key string) (*discordgo.File
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error fetching objects: %s", err.Error())
 	}
 	defer res.Body.Close()
 

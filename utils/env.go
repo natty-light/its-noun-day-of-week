@@ -14,7 +14,7 @@ func GetEnv() Env {
 
 	env.DiscordToken = os.Getenv("discordToken")
 	env.ChannelId = os.Getenv("channelId")
-	env.AwsRegion = os.Getenv("AWS_REGION")
+	env.AwsRegion = os.Getenv("BUCKET_REGION")
 	env.S3Bucket = os.Getenv("AWS_S3_BUCKET")
 
 	return env
