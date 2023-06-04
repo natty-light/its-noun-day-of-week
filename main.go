@@ -29,6 +29,7 @@ func main() {
 	}
 	downloader := utils.CreateS3Downloader(client)
 	if err != nil {
+		fmt.Println("S3 Downloader error", err)
 		return
 	}
 	d := utils.S3DataSource{Client: client, Downloader: downloader}
@@ -36,7 +37,7 @@ func main() {
 	messageData, err := prepareDailyMessage(env, d, "thursday")
 	// messageData, err := prepareDailyMessage(env, d, dayString)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Prepare message error", err)
 		return
 	}
 
@@ -57,8 +58,6 @@ func main() {
 func prepareDailyMessage(env utils.Env, d utils.S3DataSource, dayOfWeek string) (*discordgo.MessageSend, error) {
 	messageData := &discordgo.MessageSend{}
 	messageData.Files = make([]*discordgo.File, 0)
-	var err error
-
 	keys, _ := d.ListAllFilesInFolder(env, dayOfWeek)
 	if len(keys) == 0 {
 		return nil, fmt.Errorf("no images for %s", dayOfWeek)
@@ -67,10 +66,9 @@ func prepareDailyMessage(env utils.Env, d utils.S3DataSource, dayOfWeek string) 
 		key := *item.Key
 		file, err := d.DownloadAndParseFile(env, key)
 		if err != nil {
-			fmt.Println(err)
 			continue
 		}
 		messageData.Files = append(messageData.Files, file)
 	}
-	return messageData, err
+	return messageData, nil
 }
