@@ -33,7 +33,7 @@ func main() {
 		return
 	}
 	d := utils.S3DataSource{Client: client, Downloader: downloader}
-	messageData, err := prepareDailyMessage(env, d, dayString)
+	messageData, err := prepareDailyMessage(env, d, "thursday")
 	if err != nil {
 		fmt.Println("Prepare message error", err)
 		return
@@ -61,8 +61,8 @@ func prepareDailyMessage(env utils.Env, d utils.S3DataSource, dayOfWeek string) 
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(keys)
-	if len(keys) == 0 {
+	fmt.Printf("%d files found for %s \n", len(keys)-1, dayOfWeek)
+	if len(keys)-1 == 0 {
 		return nil, fmt.Errorf("no images for %s", dayOfWeek)
 	}
 	for _, item := range keys[1:] {
