@@ -13,8 +13,7 @@ func main() {
 
 	env := utils.GetEnv()
 
-	authStr := "Bot " + env.DiscordToken
-	s, err := discordgo.New(authStr)
+	s, err := discordgo.New("Bot " + env.DiscordToken)
 	if err != nil {
 		fmt.Println(err)
 		return
