@@ -20,8 +20,7 @@ func main() {
 		return
 	}
 
-	today := time.Now().Weekday()
-	dayString := strings.ToLower(today.String())
+	dayString := strings.ToLower(time.Now().Weekday().String())
 
 	fmt.Println(dayString)
 	client, err := utils.CreateS3Client(env)
