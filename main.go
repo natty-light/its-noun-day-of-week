@@ -33,6 +33,12 @@ func main() {
 		return
 	}
 	d := utils.S3DataSource{Client: client, Downloader: downloader}
+	err = d.CheckTimeStamp(env)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	messageData, err := prepareDailyMessage(env, d, "thursday")
 	if err != nil {
 		fmt.Println("Prepare message error", err)
@@ -50,6 +56,7 @@ func main() {
 		fmt.Println("s.ChannelMessageSendComplex error", err)
 	} else {
 		fmt.Println("Send successful", res)
+		d.UploadTimeStamp(env, res.Timestamp.Format(time.UnixDate))
 	}
 	os.Exit(0)
 }

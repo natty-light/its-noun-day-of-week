@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -67,7 +70,6 @@ func (s S3DataSource) DownloadAndParseFile(env Env, key string) (*discordgo.File
 
 func (s S3DataSource) DownloadAndParseFileViaDownloader(env Env, key string, mimetype string) (*discordgo.File, error) {
 	buffer := manager.NewWriteAtBuffer([]byte{})
-
 	_, err := s.Downloader.Download(context.TODO(), buffer, &s3.GetObjectInput{
 		Bucket: aws.String(env.S3Bucket),
 		Key:    aws.String(key),
@@ -78,4 +80,44 @@ func (s S3DataSource) DownloadAndParseFileViaDownloader(env Env, key string, mim
 	}
 	file := &discordgo.File{Reader: bytes.NewReader(buffer.Bytes()), Name: key, ContentType: mimetype}
 	return file, nil
+}
+
+func (s S3DataSource) UploadTimeStamp(env Env, timestamp string) error {
+	reader := strings.NewReader(timestamp)
+	_, err := s.Client.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String(env.S3Bucket),
+		Key:    aws.String("timestamp.txt"),
+		Body:   reader})
+	return err
+}
+
+func (s S3DataSource) CheckTimeStamp(env Env) error {
+	res, err := s.Client.GetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(env.S3Bucket),
+		Key:    aws.String("timestamp.txt"),
+	})
+	if err != nil {
+		if strings.Contains(err.Error(), "404") {
+			return nil
+		}
+		return err
+	}
+	buf := new(strings.Builder)
+	_, err = io.Copy(buf, res.Body)
+	if err != nil {
+		return err
+	}
+	timestamp, err := time.Parse(time.UnixDate, buf.String())
+	if err != nil {
+		return err
+	}
+	currentTime := time.Now()
+	cy, cm, cd := currentTime.Date()
+	ty, tm, td := timestamp.Date()
+
+	if cy == ty && cm == tm && cd == td {
+		return fmt.Errorf("bot already ran today, bailing")
+	}
+
+	return nil
 }
