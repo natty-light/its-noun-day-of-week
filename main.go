@@ -68,7 +68,7 @@ func prepareDailyMessage(env utils.Env, d utils.S3DataSource, dayOfWeek string) 
 		return nil, err
 	}
 	fmt.Printf("%d files found for %s \n", len(keys)-1, dayOfWeek)
-	if len(keys)-1 == 0 {
+	if len(keys)-1 <= 0 {
 		return nil, fmt.Errorf("no images for %s", dayOfWeek)
 	}
 	for _, item := range keys[1:] {
