@@ -38,7 +38,7 @@ func main() {
 		return
 	}
 
-	messageData, err := prepareDailyMessage(env, d, "thursday")
+	messageData, err := prepareDailyMessage(env, d, dayString)
 	if err != nil {
 		fmt.Println("Prepare message error", err)
 		return
