@@ -3,10 +3,11 @@ package utils
 import "os"
 
 type Env struct {
-	DiscordToken string
-	ChannelId    string
-	AwsRegion    string
-	S3Bucket     string
+	DiscordToken  string
+	ChannelId     string
+	AwsRegion     string
+	S3Bucket      string
+	TimestampFile string
 }
 
 func GetEnv() Env {
@@ -16,6 +17,7 @@ func GetEnv() Env {
 	env.ChannelId = os.Getenv("channelId")
 	env.AwsRegion = os.Getenv("BUCKET_REGION")
 	env.S3Bucket = os.Getenv("AWS_S3_BUCKET")
+	env.TimestampFile = os.Getenv("timestampFile")
 
 	return env
 }

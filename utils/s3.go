@@ -86,7 +86,7 @@ func (s S3DataSource) UploadTimeStamp(env Env, timestamp string) error {
 	reader := strings.NewReader(timestamp)
 	_, err := s.Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(env.S3Bucket),
-		Key:    aws.String("timestamp.txt"),
+		Key:    aws.String(env.TimestampFile),
 		Body:   reader})
 	return err
 }
@@ -94,7 +94,7 @@ func (s S3DataSource) UploadTimeStamp(env Env, timestamp string) error {
 func (s S3DataSource) CheckTimeStamp(env Env) error {
 	res, err := s.Client.GetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(env.S3Bucket),
-		Key:    aws.String("timestamp.txt"),
+		Key:    aws.String(env.TimestampFile),
 	})
 	if err != nil {
 		if strings.Contains(err.Error(), "404") {
