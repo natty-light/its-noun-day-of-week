@@ -74,12 +74,7 @@ func prepareDailyMessage(env utils.Env, d utils.S3DataSource, dayOfWeek string) 
 	keys, _ := d.ListAllFilesInFolder(env, "thursday")
 	for _, item := range keys[1:] {
 		key := *item.Key
-		mimetype, err := d.GetObjectMetadata(env, key)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		file, err := d.DownloadAndParseFile(env, *item.Key, mimetype)
+		file, err := d.DownloadAndParseFile(env, key)
 		if err != nil {
 			fmt.Println(err)
 			continue

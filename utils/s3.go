@@ -35,8 +35,7 @@ func CreateS3Downloader(client *s3.Client) *manager.Downloader {
 	return downloader
 }
 
-func (s S3DataSource) DownloadAndParseFile(env Env, key string, mimetype string) (*discordgo.File, error) {
-	var file *discordgo.File
+func (s S3DataSource) DownloadAndParseFileViaStream(env Env, key string, mimetype string) (*discordgo.File, error) {
 	buffer := manager.NewWriteAtBuffer([]byte{})
 
 	_, err := s.Downloader.Download(context.TODO(), buffer, &s3.GetObjectInput{
@@ -47,7 +46,7 @@ func (s S3DataSource) DownloadAndParseFile(env Env, key string, mimetype string)
 		fmt.Println("S3 download error", err)
 		return nil, err
 	}
-	file = &discordgo.File{Reader: bytes.NewReader(buffer.Bytes()), Name: key, ContentType: mimetype}
+	file := &discordgo.File{Reader: bytes.NewReader(buffer.Bytes()), Name: key, ContentType: mimetype}
 	return file, nil
 }
 
@@ -62,13 +61,20 @@ func (s S3DataSource) ListAllFilesInFolder(env Env, dayOfWeek string) ([]types.O
 	return res.Contents, nil
 }
 
-func (s S3DataSource) GetObjectMetadata(env Env, key string) (string, error) {
+func (s S3DataSource) DownloadAndParseFile(env Env, key string) (*discordgo.File, error) {
 	res, err := s.Client.GetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(env.S3Bucket),
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return *res.ContentType, nil
+	defer res.Body.Close()
+
+	buffer := new(bytes.Buffer)
+	buffer.ReadFrom(res.Body)
+	mimetype := *res.ContentType
+	file := &discordgo.File{Reader: bytes.NewReader(buffer.Bytes()), Name: key, ContentType: mimetype}
+
+	return file, nil
 }
