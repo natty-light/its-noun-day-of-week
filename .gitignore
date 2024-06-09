@@ -5,3 +5,6 @@ main
 main.zip
 trust-policy.json
 uploadLambda.sh
+createLambda.sh
+bootstrap
+bootstrap.zip

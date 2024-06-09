@@ -1,16 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"its-noun-day-of-week/utils"
 	"strings"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/bwmarrin/discordgo"
 )
 
-func main() {
-
+func sendMessage() {
 	env := utils.GetEnv()
 	s, err := discordgo.New("Bot " + env.DiscordToken)
 	if err != nil {
@@ -27,10 +28,6 @@ func main() {
 		return
 	}
 	downloader := utils.CreateS3Downloader(client)
-	if err != nil {
-		fmt.Println("S3 Downloader error", err)
-		return
-	}
 	d := utils.S3DataSource{Client: client, Downloader: downloader}
 	err = d.CheckTimeStamp(env)
 	if err != nil {
@@ -80,4 +77,15 @@ func prepareDailyMessage(env utils.Env, d utils.S3DataSource, dayOfWeek string) 
 		messageData.Files = append(messageData.Files, file)
 	}
 	return messageData, nil
+}
+
+type MyEvent struct{}
+
+func HandleRequest(ctx context.Context, event *MyEvent) (string, error) {
+	sendMessage()
+	return "success", nil
+}
+
+func main() {
+	lambda.Start(HandleRequest)
 }

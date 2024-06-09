@@ -7,6 +7,8 @@ require (
 	github.com/bwmarrin/discordgo v0.27.1
 )
 
+require github.com/aws/aws-lambda-go v1.47.0 // indirect
+
 require (
 	github.com/aws/aws-sdk-go-v2 v1.18.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10 // indirect
